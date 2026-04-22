@@ -85,7 +85,14 @@ ${message}
 
     const reply = data.choices?.[0]?.message?.content || "No response";
 
-    return res.json({ reply });
+    return res.json({
+  reply,
+  brand: {
+    name: client.name,
+    color: client.color,
+    logo: client.logo
+  }
+});
 
   } catch (err) {
     return res.status(500).json({
