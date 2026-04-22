@@ -1,45 +1,38 @@
 const clients = {
   "adeel-furniture": {
-    systemPrompt: `
-You are the AI assistant for Adeel Furniture House.
-
-RULES:
-- Never guess prices
-- Always redirect to WhatsApp for price
-- Be short and simple
-
-BUSINESS INFO:
-- Beds, wardrobes, bedroom sets
-- Foam mattresses
-- Chairs and sofas
-- Custom furniture available
-- WhatsApp: 923142223546
-`
-  },
-
-  "client-2": {
-    systemPrompt: `
-You are the AI assistant for Pizza Store.
-
-RULES:
-- Never guess prices
-- Always recommend menu
-`
+    active: true
   }
 };
 
 export default async function handler(req, res) {
+
+  // CORS FIX
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
     const { message, clientId } = req.body;
+
+    if (!message || !clientId) {
+      return res.status(400).json({ reply: "Missing data" });
+    }
 
     const client = clients[clientId];
 
     if (!client) {
-      return res.status(404).json({ reply: "Client not found" });
+      return res.status(404).json({ reply: "Invalid clientId" });
     }
 
-    const systemPrompt = client.systemPrompt;
+    if (!client.active) {
+      return res.status(403).json({ reply: "Service disabled" });
+    }
 
+    // 🧠 SAFE OPENROUTER CALL
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -49,19 +42,34 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "meta-llama/llama-3.1-8b-instruct",
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message }
+          {
+            role: "system",
+            content: "You are a helpful furniture assistant. Keep answers short."
+          },
+          {
+            role: "user",
+            content: message
+          }
         ]
       })
     });
 
     const data = await aiRes.json();
 
-    return res.json({
-      reply: data?.choices?.[0]?.message?.content || "No response"
-    });
+    console.log("OPENROUTER RESPONSE:", data);
+
+    const reply =
+      data?.choices?.[0]?.message?.content ||
+      data?.error?.message ||
+      "AI failed to respond";
+
+    return res.status(200).json({ reply });
 
   } catch (err) {
-    return res.status(500).json({ reply: "Server error" });
+    console.error("BACKEND ERROR:", err);
+
+    return res.status(500).json({
+      reply: "Server error (check backend logs)"
+    });
   }
 }
