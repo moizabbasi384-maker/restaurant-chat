@@ -97,6 +97,16 @@
 
     const data = await res.json();
     const brand = data.brand;
+    const brand = data.brand;
+
+// get header
+const header = box.querySelector("#header");
+
+// apply branding
+if (brand && header) {
+  header.innerText = brand.name + " Assistant";
+  header.style.background = brand.color;
+}
     addMessage(data.reply, false);
   };
 })();
