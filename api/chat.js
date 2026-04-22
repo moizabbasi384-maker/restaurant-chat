@@ -1,72 +1,31 @@
 const clients = {
   "cafe-bliss": {
-    name: "Cafe Bliss",
-    color: "#ff4d4d",
-    logo: "https://example.com/logo.png",
     apiKey: "key_12345",
-    active: true,
-    menu: ["Burger", "Biryani", "Pasta"]
+    active: true
   }
 };
+
 export default async function handler(req, res) {
-  const { message, clientId, apiKey } = req.body;
-
-  const client = clients[clientId];
-
-  if (!client) {
-    return res.status(404).json({ reply: "Client not found" });
-  }
-
-  if (client.apiKey !== apiKey) {
-    return res.status(403).json({ reply: "Invalid API key" });
-  }
-
-  if (!client.active) {
-    return res.status(403).json({
-      reply: "Service disabled. Please contact support."
-    });
-  }
-
-  // 🧠 Build prompt
-const prompt = `
-You are a restaurant assistant for ${client.name}.
-
-STRICT RULES (MUST FOLLOW):
-
-1. ONLY speak:
-   - English
-   - Roman Urdu (English letters only)
-
-2. Language:
-   - English input → English reply
-   - Roman Urdu input → Roman Urdu reply
-
-3. Greeting:
-   - "hi" → "Hi, how can I assist you?"
-   - "assalamualaikum" → "Walaikum assalam, mai aap ki kaise madad kar sakta hun?"
-
-4. MENU RULE (VERY IMPORTANT):
-   - ONLY show items from this menu:
-     ${client.menu.join(", ")}
-   - DO NOT add anything else
-   - DO NOT invent food
-
-5. If user asks for menu:
-   - list items in short bullet style
-   - Reply SHORT
-   
-6. Keep replies:
-   - Clear
-   - Only English or Roman Urdu
-   - VERY SHORT answers (1–3 lines max)
-   - No long paragraphs
-   - No extra storytelling
-   - Be friendly and natural
-User:
-${message}
-`;
-
   try {
+    const { message, clientId } = req.body;
+
+    if (!message || !clientId) {
+      return res.status(400).json({ reply: "Missing data" });
+    }
+
+    const client = clients[clientId];
+
+    if (!client) {
+      return res.status(404).json({ reply: "Client not found" });
+    }
+
+    if (!client.active) {
+      return res.status(403).json({ reply: "Service disabled" });
+    }
+
+    // 🧠 MINIMAL prompt only (NO business logic)
+    const prompt = message;
+
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -83,18 +42,11 @@ ${message}
 
     const data = await aiRes.json();
 
-    const reply = data.choices?.[0]?.message?.content || "No response";
-
-return res.json({
-  reply,
-  brand: {
-    name: client.name,
-    color: client.color
-  }
-});
-  } catch (err) {
-    return res.status(500).json({
-      reply: "Error talking to AI"
+    return res.json({
+      reply: data?.choices?.[0]?.message?.content || "No response"
     });
+
+  } catch (err) {
+    return res.status(500).json({ reply: "Server error" });
   }
 }
