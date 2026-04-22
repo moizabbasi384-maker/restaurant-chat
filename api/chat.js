@@ -85,15 +85,13 @@ ${message}
 
     const reply = data.choices?.[0]?.message?.content || "No response";
 
-    return res.json({
+return res.json({
   reply,
   brand: {
     name: client.name,
-    color: client.color,
-    logo: client.logo
+    color: client.color
   }
 });
-
   } catch (err) {
     return res.status(500).json({
       reply: "Error talking to AI"
