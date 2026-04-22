@@ -32,17 +32,23 @@
   box.style.flexDirection = "column";
   box.style.zIndex = "9999";
 
-  box.innerHTML = `
-    <div id="header" style="padding:10px;color:white;">
-  Chat
-</div>
-    <div id="messages" style="flex:1;padding:10px;overflow:auto;"></div>
-    <div style="display:flex;">
-      <input id="input" style="flex:1;padding:10px;border:none;border-top:1px solid #ccc;" placeholder="Type..." />
-      <button id="send" style="padding:10px;">Send</button>
-    </div>
-  `;
+ box.innerHTML = `
+  <div id="header" style="
+    padding:10px;
+    color:white;
+    font-weight:bold;
+    background:#ff4d4d;
+  ">
+    Chat
+  </div>
 
+  <div id="messages" style="height:300px;overflow:auto;padding:10px;"></div>
+
+  <div style="display:flex;">
+    <input id="input" style="flex:1;padding:10px;" />
+    <button id="send">Send</button>
+  </div>
+`;
   document.body.appendChild(box);
 
   // 🟢 Toggle
