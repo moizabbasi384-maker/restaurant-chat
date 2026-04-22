@@ -33,7 +33,9 @@
   box.style.zIndex = "9999";
 
   box.innerHTML = `
-    <div style="padding:10px;background:#ff4d4d;color:#fff;">Chat</div>
+    <div id="header" style="padding:10px;color:white;">
+  Chat
+</div>
     <div id="messages" style="flex:1;padding:10px;overflow:auto;"></div>
     <div style="display:flex;">
       <input id="input" style="flex:1;padding:10px;border:none;border-top:1px solid #ccc;" placeholder="Type..." />
@@ -88,6 +90,7 @@
     });
 
     const data = await res.json();
+    const brand = data.brand;
     addMessage(data.reply, false);
   };
 })();
