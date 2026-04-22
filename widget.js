@@ -52,15 +52,22 @@
   const input = box.querySelector("#input");
   const send = box.querySelector("#send");
 
-  function addMessage(text, isUser) {
-    const div = document.createElement("div");
-    div.style.margin = "5px 0";
-    div.style.textAlign = isUser ? "right" : "left";
-    div.innerText = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
+ function typeMessage(text, callback) {
+  let i = 0;
+  const div = document.createElement("div");
+  div.style.margin = "5px 0";
+  messages.appendChild(div);
 
+  const interval = setInterval(() => {
+    div.innerText += text[i];
+    i++;
+
+    if (i >= text.length) {
+      clearInterval(interval);
+      if (callback) callback();
+    }
+  }, 20);
+}
   send.onclick = async () => {
     const text = input.value;
     if (!text) return;
