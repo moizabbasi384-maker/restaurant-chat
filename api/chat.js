@@ -3,10 +3,17 @@ const clients = {
     name: "Cafe Bliss",
     hours: "9AM - 11PM",
     apiKey: "key_12345",
-    active: true
+    active: true,
+
+    menu: [
+      "Chicken Biryani",
+      "Zinger Burger",
+      "Pasta Alfredo",
+      "Cold Coffee",
+      "Chocolate Cake"
+    ]
   }
 };
-
 export default async function handler(req, res) {
   const { message, clientId, apiKey } = req.body;
 
