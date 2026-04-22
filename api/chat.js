@@ -1,7 +1,30 @@
 const clients = {
-  "cafe-bliss": {
-    apiKey: "key_12345",
-    active: true
+  "adeel-furniture": {
+    systemPrompt: `
+You are the AI assistant for Adeel Furniture House.
+
+RULES:
+- Never guess prices
+- Always redirect to WhatsApp for price
+- Be short and simple
+
+BUSINESS INFO:
+- Beds, wardrobes, bedroom sets
+- Foam mattresses
+- Chairs and sofas
+- Custom furniture available
+- WhatsApp: 923142223546
+`
+  },
+
+  "client-2": {
+    systemPrompt: `
+You are the AI assistant for Pizza Store.
+
+RULES:
+- Never guess prices
+- Always recommend menu
+`
   }
 };
 
@@ -9,22 +32,13 @@ export default async function handler(req, res) {
   try {
     const { message, clientId } = req.body;
 
-    if (!message || !clientId) {
-      return res.status(400).json({ reply: "Missing data" });
-    }
-
     const client = clients[clientId];
 
     if (!client) {
       return res.status(404).json({ reply: "Client not found" });
     }
 
-    if (!client.active) {
-      return res.status(403).json({ reply: "Service disabled" });
-    }
-
-    // 🧠 MINIMAL prompt only (NO business logic)
-    const prompt = message;
+    const systemPrompt = client.systemPrompt;
 
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -35,7 +49,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "meta-llama/llama-3.1-8b-instruct",
         messages: [
-          { role: "user", content: prompt }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
         ]
       })
     });
