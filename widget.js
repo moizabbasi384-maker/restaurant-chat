@@ -3,7 +3,9 @@
   const clientId = script.getAttribute("data-client");
   const apiKey = script.getAttribute("data-key");
 
-  // 🟢 Create chat button
+  // =========================
+  // 🔵 FLOATING BUTTON
+  // =========================
   const button = document.createElement("div");
   button.innerText = "Chat";
   button.style.position = "fixed";
@@ -14,11 +16,14 @@
   button.style.padding = "12px 16px";
   button.style.borderRadius = "50px";
   button.style.cursor = "pointer";
-  button.style.zIndex = "9999";
+  button.style.zIndex = "99999";
+  button.style.fontFamily = "Arial";
 
   document.body.appendChild(button);
 
-  // 🟢 Create chat box
+  // =========================
+  // 💬 CHAT BOX
+  // =========================
   const box = document.createElement("div");
   box.style.position = "fixed";
   box.style.bottom = "80px";
@@ -26,32 +31,54 @@
   box.style.width = "300px";
   box.style.height = "400px";
   box.style.background = "#fff";
-  box.style.border = "1px solid #ccc";
-  box.style.borderRadius = "10px";
+  box.style.borderRadius = "12px";
+  box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.2)";
   box.style.display = "none";
   box.style.flexDirection = "column";
-  box.style.zIndex = "9999";
+  box.style.overflow = "hidden";
+  box.style.zIndex = "99999";
+  box.style.fontFamily = "Arial";
 
- box.innerHTML = `
-  <div id="header" style="
-    padding:10px;
-    color:white;
-    font-weight:bold;
-    background:#ff4d4d;
-  ">
-    Chat
-  </div>
+  box.innerHTML = `
+    <div id="header" style="
+      padding:12px;
+      color:white;
+      font-weight:bold;
+      background:#ff4d4d;
+    ">
+      Chat
+    </div>
 
-  <div id="messages" style="height:300px;overflow:auto;padding:10px;"></div>
+    <div id="messages" style="
+      flex:1;
+      padding:10px;
+      overflow:auto;
+      font-size:14px;
+    "></div>
 
-  <div style="display:flex;">
-    <input id="input" style="flex:1;padding:10px;" />
-    <button id="send">Send</button>
-  </div>
-`;
+    <div style="display:flex;border-top:1px solid #eee;">
+      <input id="input" style="
+        flex:1;
+        padding:10px;
+        border:none;
+        outline:none;
+      " placeholder="Type..." />
+
+      <button id="send" style="
+        padding:10px 14px;
+        border:none;
+        background:#ff4d4d;
+        color:white;
+        cursor:pointer;
+      ">Send</button>
+    </div>
+  `;
+
   document.body.appendChild(box);
 
-  // 🟢 Toggle
+  // =========================
+  // TOGGLE
+  // =========================
   button.onclick = () => {
     box.style.display = box.style.display === "none" ? "flex" : "none";
   };
@@ -59,28 +86,40 @@
   const messages = box.querySelector("#messages");
   const input = box.querySelector("#input");
   const send = box.querySelector("#send");
+  const header = box.querySelector("#header");
 
- function typeMessage(text, callback) {
-  let i = 0;
-  const div = document.createElement("div");
-  div.style.margin = "5px 0";
-  messages.appendChild(div);
+  // =========================
+  // ✍️ TYPING EFFECT
+  // =========================
+  function typeMessage(text, isUser = false) {
+    let i = 0;
+    const div = document.createElement("div");
 
-  const interval = setInterval(() => {
-    div.innerText += text[i];
-    i++;
+    div.style.margin = "6px 0";
+    div.style.textAlign = isUser ? "right" : "left";
+    div.style.whiteSpace = "pre-wrap";
 
-    if (i >= text.length) {
-      clearInterval(interval);
-      if (callback) callback();
-    }
-  }, 20);
-}
+    messages.appendChild(div);
+
+    const interval = setInterval(() => {
+      div.innerText += text[i];
+      i++;
+
+      if (i >= text.length) {
+        clearInterval(interval);
+        messages.scrollTop = messages.scrollHeight;
+      }
+    }, 15);
+  }
+
+  // =========================
+  // 📩 SEND MESSAGE
+  // =========================
   send.onclick = async () => {
     const text = input.value;
     if (!text) return;
 
-    addMessage(text, true);
+    typeMessage("You: " + text, true);
     input.value = "";
 
     const res = await fetch("https://restaurant-chat-one.vercel.app/api/chat", {
@@ -96,17 +135,21 @@
     });
 
     const data = await res.json();
-    const brand = data.brand;
+
+    // =========================
+    // 🎨 BRANDING (IMPORTANT)
+    // =========================
     const brand = data.brand;
 
-// get header
-const header = box.querySelector("#header");
+    if (brand) {
+      header.innerText = brand.name + " Assistant";
+      header.style.background = brand.color;
 
-// apply branding
-if (brand && header) {
-  header.innerText = brand.name + " Assistant";
-  header.style.background = brand.color;
-}
-    addMessage(data.reply, false);
+      button.style.background = brand.color;
+      send.style.background = brand.color;
+    }
+
+    // bot reply
+    typeMessage(data.reply);
   };
 })();
