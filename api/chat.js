@@ -1,17 +1,11 @@
 const clients = {
   "cafe-bliss": {
     name: "Cafe Bliss",
+    logo: "https://example.com/logo.png",
+    color: "#ff4d4d",
     hours: "9AM - 11PM",
     apiKey: "key_12345",
-    active: true,
-
-    menu: [
-      "Chicken Biryani",
-      "Zinger Burger",
-      "Pasta Alfredo",
-      "Cold Coffee",
-      "Chocolate Cake"
-    ]
+    menu: ["Biryani", "Burger", "Pasta"]
   }
 };
 export default async function handler(req, res) {
